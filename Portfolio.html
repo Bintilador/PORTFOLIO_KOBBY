@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PORTFOLIO | Kobby Taneza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Permanent+Marker&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CORE AESTHETICS (The Draft Look) --- */
+        :root {
+            --bg-color: #f4f1ea;
+            --grid-color: #e0ded8;
+            --ink-color: #2a2a2a;
+            --accent-red: #d93025;
+            --tape-color: rgba(255, 255, 255, 0.6);
+            --modal-overlay: rgba(42, 42, 42, 0.95);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Courier Prime', monospace;
+            color: var(--ink-color);
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        .font-hand { font-family: 'Caveat', cursive; }
+        .font-marker { font-family: 'Permanent Marker', cursive; }
+        
+        /* UI Elements */
+        .draft-card {
+            background: white;
+            border: 2px solid #2a2a2a;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            cursor: pointer;
+            display: block; /* Ensures links work as blocks */
+        }
+        .draft-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.2);
+        }
+
+        /* Tape Effect */
+        .tape {
+            background-color: var(--tape-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            backdrop-filter: blur(1px);
+            position: absolute;
+            z-index: 10;
+        }
+
+        /* Polaroid Image */
+        .polaroid {
+            background: white;
+            padding: 1rem 1rem 3rem 1rem;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.02);
+            z-index: 20;
+        }
+
+        /* Interactive SWOT Folder */
+        .swot-folder {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #2a2a2a;
+            background: #fff;
+        }
+        .swot-folder::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0,0,0,0.03) 10px,
+                rgba(0,0,0,0.03) 20px
+            );
+        }
+        .swot-folder:hover {
+            background: #fffdc2; /* Highlight on hover */
+        }
+
+        /* MODAL STYLES (Popup) */
+        .modal-backdrop {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            background: var(--modal-overlay);
+        }
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-paper {
+            background: #fff;
+            background-image: radial-gradient(#e0ded8 1px, transparent 1px);
+            background-size: 10px 10px;
+            transform: scale(0.9) rotate(-2deg);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* SCROLL FIXES: */
+            max-height: 90vh; /* Limit height to 90% of screen */
+            overflow-y: auto; /* Allow scrolling inside the paper */
+        }
+        .modal-backdrop.active .modal-paper {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+
+        /* FULL PAGE SLIDER (Skill Pages) */
+        .skill-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 200; /* Above everything */
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+            overflow-y: auto; /* Ensure full page scrolls */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+        }
+        .skill-page.active {
+            transform: translateX(0);
+        }
+
+        /* Navigation Links */
+        .nav-link:hover {
+            text-decoration: line-through;
+            text-decoration-color: var(--accent-red);
+            text-decoration-thickness: 2px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #f4f1ea; border-left: 1px solid #ccc; }
+        ::-webkit-scrollbar-thumb { background: #2a2a2a; border: 2px solid #f4f1ea; }
+        
+        /* Modal specific scrollbar */
+        .modal-paper::-webkit-scrollbar { width: 8px; }
+        .modal-paper::-webkit-scrollbar-track { background: #fff; }
+        .modal-paper::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav class="fixed top-0 left-0 w-full z-50 bg-stone-900 text-white text-xs md:text-sm font-mono border-b-4 border-stone-700 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="font-bold tracking-widest">STATUS: ONLINE</span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="hover:text-stone-400 transition-colors">[01_HOME]</a>
+                <a href="#about" class="hover:text-stone-400 transition-colors">[02_PROFILE]</a>
+                <a href="#skills" class="hover:text-stone-400 transition-colors">[03_SKILLS]</a>
+                <a href="#swot" class="hover:text-stone-400 transition-colors">[04_S.W.O.T]</a>
+            </div>
+
+            <div class="text-stone-500">
+                ID: <span id="random-id">8842-A</span>
+            </div>
+        </div>
+        <div class="md:hidden bg-stone-800 text-center py-1 text-[10px] text-stone-400">
+            SCROLL_TO_NAVIGATE
+        </div>
+    </nav>
+
+    <section id="home" class="min-h-screen flex flex-col justify-center items-center pt-16 relative">
+        <div class="absolute top-24 right-10 w-32 h-32 border-4 border-red-600/20 rounded-full flex items-center justify-center -rotate-12 pointer-events-none">
+            <span class="font-marker text-red-600/40 text-xl">APPROVED</span>
+        </div>
+
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h1 class="text-5xl md:text-8xl font-bold mb-6 tracking-tighter text-stone-900">
+                PORTFOLIO: <br>
+                <span class="relative inline-block">
+                    Kobby Taneza
+                    <svg class="absolute w-full h-4 -bottom-2 left-0 text-red-600" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="3" fill="none" />
+                    </svg>
+                </span>
+            </h1>
+            <p class="text-xl md:text-2xl text-stone-600 max-w-2xl mx-auto font-hand font-bold rotate-1">
+                "Photography. Film. Code. I build things."
+            </p>
+            
+        </div>
+    </section>
+
+    <section id="about" class="py-24 border-t-2 border-dashed border-stone-400 relative">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                
+                <div class="w-full md:w-1/2 flex justify-center relative group" onclick="openModal('profile')">
+                    <div class="polaroid max-w-sm w-full group-hover:scale-105 transition-transform duration-300">
+                        <div class="tape w-32 h-8 -top-4 left-1/3 rotate-3"></div>
+                        <img src="4.jpeg" alt="Profile" class="w-full h-80 object-cover contrast-125">
+                        
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                            <div class="bg-black text-white px-4 py-2 font-bold text-sm -rotate-2 border-2 border-white">
+                                CLICK TO OPEN FILE
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-10 right-0 md:-right-10 bg-yellow-200 p-4 shadow-lg rotate-3 w-40 font-hand text-lg text-center border border-yellow-300 pointer-events-none">
+                        <div class="tape w-12 h-6 -top-3 left-10 bg-white/40 rotate-45"></div>
+                        Personnel File #8842
+                    </div>
+                </div>
+
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-3xl font-bold mb-6 border-b-4 border-stone-800 inline-block">02. PROFILE</h2>
+                    
+                    <div class="bg-stone-200 p-4 border-l-4 border-red-500 font-mono text-sm">
+                        <strong class="block mb-2 text-red-700">SELF INTRODUCTION:</strong>
+                        <p>
+                            Hello! I'm Kobby Taneza, a creative developer based in SJDM, Bulacan. I specialize in merging technical logic with visual artistry. Currently open for opportunities in Photography and Software Development.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 flex flex-wrap gap-4">
+                        <a href="https://www.instagram.com/kobitot?igsh=dTh2cmR2bHJsbGZt" target="_blank" class="border-2 border-black px-4 py-2 hover:bg-stone-800 hover:text-white transition-colors font-bold text-xs flex items-center gap-2"><i class="fab fa-instagram"></i> INSTA</a>
+                        <a href="https://www.facebook.com/share/1AJrUo9uGn/" target="_blank" class="border-2 border-black px-4 py-2 hover:bg-stone-800 hover:text-white transition-colors font-bold text-xs flex items-center gap-2"><i class="fab fa-facebook"></i> FACEBOOK</a>
+                        <a href="https://github.com/Bintilador" target="_blank" class="border-2 border-black px-4 py-2 hover:bg-stone-800 hover:text-white transition-colors font-bold text-xs flex items-center gap-2"><i class="fab fa-github"></i> GITHUB</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="py-24 border-t-2 border-dashed border-stone-400">
+        <div class="container mx-auto px-6">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold inline-block bg-stone-900 text-white px-4 py-2 -rotate-1">03. SKILLS INVENTORY</h2>
+                <p class="font-hand text-stone-500 mt-2">(Click a card to view sample projects)</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div onclick="openPage('photography')" class="draft-card p-6 text-center relative group">
+                    <div class="tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-0"></div>
+                    <i class="fas fa-camera-retro text-5xl mb-4 text-stone-800 group-hover:text-red-600 transition-colors"></i>
+                    <h3 class="font-bold text-xl mb-2 border-b-2 border-stone-300 pb-2">PHOTOGRAPHY</h3>
+                    <p class="font-hand text-lg text-stone-600">View Portfolio &rarr;</p>
+                </div>
+
+                <div onclick="openPage('film')" class="draft-card p-6 text-center relative group">
+                    <div class="tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-0"></div>
+                    <i class="fas fa-film text-5xl mb-4 text-stone-800 group-hover:text-red-600 transition-colors"></i>
+                    <h3 class="font-bold text-xl mb-2 border-b-2 border-stone-300 pb-2">FILM MAKING</h3>
+                    <p class="font-hand text-lg text-stone-600">View Reels &rarr;</p>
+                </div>
+
+                <div onclick="openPage('java')" class="draft-card p-6 text-center relative group">
+                    <div class="tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-0"></div>
+                    <i class="fab fa-java text-5xl mb-4 text-stone-800 group-hover:text-red-600 transition-colors"></i>
+                    <h3 class="font-bold text-xl mb-2 border-b-2 border-stone-300 pb-2">JAVA</h3>
+                    <p class="font-hand text-lg text-stone-600">View Code &rarr;</p>
+                </div>
+
+                </div>
+        </div>
+    </section>
+
+    <section id="swot" class="py-24 relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-12">
+                <h2 class="text-3xl font-bold">04. S.W.O.T</h2>
+                <p class="font-hand text-xl text-stone-500 mt-2">(Click the files to open confidential dossiers)</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <div onclick="openModal('strengths')" class="swot-folder p-8 text-left group shadow-md hover:shadow-xl transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-black text-white px-2 py-1 text-xs font-bold">INTERNAL</span>
+                            <h3 class="text-2xl font-bold mt-2 group-hover:underline decoration-green-500 decoration-4">STRENGTHS [+]</h3>
+                        </div>
+                        <i class="fas fa-folder-open text-3xl text-stone-300 group-hover:text-stone-800"></i>
+                    </div>
+                    <div class="mt-4 font-hand text-stone-500 text-lg">
+                        Click to view assets...
+                    </div>
+                </div>
+
+                <div onclick="openModal('weaknesses')" class="swot-folder p-8 text-left group shadow-md hover:shadow-xl transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-black text-white px-2 py-1 text-xs font-bold">INTERNAL</span>
+                            <h3 class="text-2xl font-bold mt-2 group-hover:underline decoration-red-500 decoration-4">WEAKNESSES [-]</h3>
+                        </div>
+                        <i class="fas fa-folder-open text-3xl text-stone-300 group-hover:text-stone-800"></i>
+                    </div>
+                    <div class="mt-4 font-hand text-stone-500 text-lg">
+                        Click to view liabilities...
+                    </div>
+                </div>
+
+                <div onclick="openModal('opportunities')" class="swot-folder p-8 text-left group shadow-md hover:shadow-xl transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="border border-black text-black px-2 py-1 text-xs font-bold">EXTERNAL</span>
+                            <h3 class="text-2xl font-bold mt-2 group-hover:underline decoration-blue-500 decoration-4">OPPORTUNITIES [?]</h3>
+                        </div>
+                        <i class="fas fa-folder-open text-3xl text-stone-300 group-hover:text-stone-800"></i>
+                    </div>
+                    <div class="mt-4 font-hand text-stone-500 text-lg">
+                        Click to view potential...
+                    </div>
+                </div>
+
+                <div onclick="openModal('threats')" class="swot-folder p-8 text-left group shadow-md hover:shadow-xl transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="border border-black text-black px-2 py-1 text-xs font-bold">EXTERNAL</span>
+                            <h3 class="text-2xl font-bold mt-2 group-hover:underline decoration-yellow-500 decoration-4">THREATS [!]</h3>
+                        </div>
+                        <i class="fas fa-folder-open text-3xl text-stone-300 group-hover:text-stone-800"></i>
+                    </div>
+                    <div class="mt-4 font-hand text-stone-500 text-lg">
+                        Click to view risks...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 border-t-8 border-stone-700">
+        <div class="container mx-auto px-6 text-center font-mono">
+            <div class="mb-6">
+                <h2 class="text-white text-2xl font-bold mb-2">READY TO COLLABORATE?</h2>
+                <p>Send transmission to: <span class="text-white border-b border-white">kobbytaneza@gmail.com</span></p>
+            </div>
+        </div>
+    </footer>
+
+
+    <div id="page-photography" class="skill-page p-8 md:p-16">
+        <div class="max-w-6xl mx-auto">
+            <button onclick="closePage('photography')" class="mb-8 border-2 border-black px-6 py-2 hover:bg-black hover:text-white transition-colors font-bold">&larr; BACK TO DESK</button>
+            <h2 class="text-5xl font-bold mb-8">VISUAL ARCHIVES: PHOTOGRAPHY</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="polaroid">
+                    <div class="tape w-24 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-2"></div>
+                    <img src="1.jpg" class="w-full h-64 object-cover">
+                    <p class="text-center font-hand mt-4">"Urban Shadows"</p>
+                </div>
+                <div class="polaroid rotate-2">
+                    <div class="tape w-24 h-10 -top-6 left-1/2 -translate-x-1/2 -rotate-1"></div>
+                    <img src="2.jpg" class="w-full h-64 object-cover">
+                    <p class="text-center font-hand mt-4">"Portrait Study"</p>
+                </div>
+                <div class="polaroid -rotate-1">
+                    <div class="tape w-24 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-3"></div>
+                    <img src="3.jpg" class="w-full h-64 object-cover ">
+                    <p class="text-center font-hand mt-4">"Untitled"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-film" class="skill-page p-8 md:p-16">
+        <div class="max-w-6xl mx-auto">
+            <button onclick="closePage('film')" class="mb-8 border-2 border-black px-6 py-2 hover:bg-black hover:text-white transition-colors font-bold">&larr; BACK TO DESK</button>
+            <h2 class="text-5xl font-bold mb-8">PRODUCTION LOGS: FILM</h2>
+            
+            <div class="space-y-12">
+                <div class="border-4 border-black bg-black p-2">
+                    <div class="bg-white p-4">
+                        <div class="flex gap-2 mb-4 overflow-hidden opacity-50">
+                            <div class="h-8 w-8 bg-black"></div><div class="h-8 w-8 bg-black"></div><div class="h-8 w-8 bg-black"></div><div class="h-8 w-8 bg-black"></div>
+                            <span class="font-mono text-xl self-center">SCENE: 001</span>
+                        </div>
+                        <img src="5.mp4" class="w-full h-auto ">
+                        <div class="mt-4 flex justify-between items-end">
+                            <div>
+                                <h3 class="text-2xl font-bold">PROJECT: "RIVALRY TO BROTHERHOOD"</h3>
+                                <p class="font-mono text-sm">Role: Director/ VIDEOGRAPHER</p>
+                            </div>
+                            <span class="font-marker text-red-600 text-2xl rotate-12">FINAL CUT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-java" class="skill-page p-8 md:p-16">
+        <div class="max-w-6xl mx-auto">
+            <button onclick="closePage('java')" class="mb-8 border-2 border-black px-6 py-2 hover:bg-black hover:text-white transition-colors font-bold">&larr; BACK TO DESK</button>
+            <h2 class="text-5xl font-bold mb-8">SIMPLE GAME: JAVA</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="polaroid rotate-1">
+                    <div class="tape w-24 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-2"></div>
+                    <img src="Capture.png" class="w-full h-64 object-cover" onerror="this.src='https://source.unsplash.com/random/400x300/?video,game'">
+                    <p class="text-center font-hand mt-4">"Main Menu Interface"</p>
+                </div>
+
+                <div class="polaroid -rotate-2">
+                    <div class="tape w-24 h-6 -top-3 left-1/2 -translate-x-1/2 -rotate-1"></div>
+                    <img src="Capture1.png" class="w-full h-64 object-cover" onerror="this.src='https://source.unsplash.com/random/400x300/?arcade,game'">
+                    <p class="text-center font-hand mt-4">"Game Over"</p>
+                </div>
+
+                <div class="polaroid rotate-2">
+                    <div class="tape w-24 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-1"></div>
+                    <img src="Capture2.png" class="w-full h-64 object-cover" onerror="this.src='https://source.unsplash.com/random/400x300/?code,screen'">
+                    <p class="text-center font-hand mt-4">"Code"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+                    
+    <div id="modal-profile" class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center px-4" onclick="closeModal('profile')">
+        <div class="modal-paper max-w-2xl w-full p-8 shadow-2xl relative border-2 border-stone-800 bg-[#fdfdfd]" onclick="event.stopPropagation()">
+            <div class="absolute top-4 left-6 border-2 border-red-700 text-red-700 px-2 py-1 font-bold text-xs -rotate-2">CONFIDENTIAL</div>
+            <div class="absolute bottom-6 right-6 border-4 border-stone-300 text-stone-300 text-5xl font-marker rotate-12 opacity-50 pointer-events-none">DECRYPTED</div>
+            
+            <button onclick="closeModal('profile')" class="absolute top-4 right-4 text-2xl hover:text-red-600 font-bold z-50">&times;</button>
+            
+            <div class="flex flex-col md:flex-row gap-8 mt-6">
+                <div class="w-full md:w-1/3">
+                    <div class="border p-2 bg-white shadow-md rotate-1">
+                        <img src="4.jpeg" alt="Kobby" class="w-full h-auto">
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="font-mono text-xs">ID: 8842-A</p>
+                        <p class="font-mono text-xs">K. Taneza</p>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-2/3">
+                    <h2 class="text-3xl font-bold mb-1 border-b-2 border-stone-800">PERSONNEL FILE</h2>
+                    <p class="font-mono text-xs text-stone-500 mb-6">Subject: Software Developer / Photographer</p>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg mb-2 bg-stone-200 inline-block px-2">PERSONAL GOAL</h3>
+                        <p class="text-lg leading-relaxed font-hand text-xl text-stone-800">
+                            "I am a freelance photographer currently building my own path in the industry. Before going on my own, I gained experience as the official photographer for STI SJDM, covering school events and activities. Right now, I’m accepting gigs for events like weddings and debuts to grow my portfolio. My ultimate dream is to one day turn this into a full studio that offers everything from photography to catering and equipment rentals. Every gig I book brings me one step closer to that goal!"
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-sm font-mono border-t border-dashed border-stone-400 pt-4">
+                        <div>
+                            <span class="block text-stone-500 text-xs">CURRENT LOCATION</span>
+                            <strong>SJDM Bulacan</strong>
+                        </div>
+                        <div>
+                            <span class="block text-stone-500 text-xs">PRIMARY OBJECTIVE</span>
+                            <strong>Photography & Software Dev</strong>
+                        </div>
+                        <div>
+                            <span class="block text-stone-500 text-xs">STATUS</span>
+                            <strong class="text-green-700">Available for Hire</strong>
+                        </div>
+                        <div>
+                            <span class="block text-stone-500 text-xs">CONTACT</span>
+                            <a href="mailto:kobbytaneza@gmail.com" class="underline hover:text-red-600">kobbytaneza@gmail.com</a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <a href="https://www.instagram.com/kobitot?igsh=dTh2cmR2bHJsbGZt" target="_blank" class="bg-black text-white px-4 py-2 text-xs font-bold hover:bg-stone-700 flex items-center gap-2"><i class="fab fa-instagram"></i> INSTAGRAM</a>
+                        <a href="https://www.facebook.com/share/1AJrUo9uGn/" target="_blank" class="bg-black text-white px-4 py-2 text-xs font-bold hover:bg-stone-700 flex items-center gap-2"><i class="fab fa-facebook"></i> FACEBOOK</a>
+                        <a href="https://github.com/Bintilador" target="_blank" class="bg-black text-white px-4 py-2 text-xs font-bold hover:bg-stone-700 flex items-center gap-2"><i class="fab fa-github"></i> GITHUB</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-strengths" class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center px-4" onclick="closeModal('strengths')">
+        <div class="modal-paper max-w-lg w-full p-8 shadow-2xl relative border border-stone-300" onclick="event.stopPropagation()">
+            <div class="tape w-32 h-8 -top-4 left-1/2 -translate-x-1/2"></div>
+            
+            <button onclick="closeModal('strengths')" class="absolute top-4 right-4 text-2xl hover:text-red-600 font-bold">&times;</button>
+            
+            <div class="border-b-2 border-black pb-2 mb-4 flex justify-between items-end">
+                <h2 class="text-3xl font-bold text-stone-800">STRENGTHS</h2>
+                <span class="text-xs font-mono border border-black px-1">CONFIDENTIAL</span>
+            </div>
+            
+            <ul class="space-y-4 font-mono text-sm md:text-base">
+                <li class="flex items-start gap-3">
+                    <span class="text-green-600 font-bold">[+]</span>
+                    <div>
+                        <strong class="block text-lg">Hard Working</strong>
+                        <span class="font-hand text-stone-600">Dedicated to putting in the effort required to deliver quality results on time.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-green-600 font-bold">[+]</span>
+                    <div>
+                        <strong class="block text-lg">Adaptable</strong>
+                        <span class="font-hand text-stone-600">Quick to adjust to new environments, software tools, and project requirements.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-green-600 font-bold">[+]</span>
+                    <div>
+                        <strong class="block text-lg">Cooperative</strong>
+                        <span class="font-hand text-stone-600">A collaborative team player who values open communication and shared goals.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-green-600 font-bold">[+]</span>
+                    <div>
+                        <strong class="block text-lg">Easy to Instruct</strong>
+                        <span class="font-hand text-stone-600">Quick to understand directives and follows guidance precisely.</span>
+                    </div>
+                </li>
+            </ul>
+            
+            <div class="absolute bottom-10 right-10 border-4 border-green-600/20 text-green-600/20 font-marker text-4xl -rotate-12 p-2 pointer-events-none">
+                VERIFIED
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-weaknesses" class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center px-4" onclick="closeModal('weaknesses')">
+        <div class="modal-paper max-w-lg w-full p-8 shadow-2xl relative border border-stone-300" onclick="event.stopPropagation()">
+            <div class="tape w-32 h-8 -top-4 left-1/2 -translate-x-1/2"></div>
+            <button onclick="closeModal('weaknesses')" class="absolute top-4 right-4 text-2xl hover:text-red-600 font-bold">&times;</button>
+            
+            <div class="border-b-2 border-black pb-2 mb-4 flex justify-between items-end">
+                <h2 class="text-3xl font-bold text-stone-800">WEAKNESSES</h2>
+                <span class="text-xs font-mono border border-black px-1">CONFIDENTIAL</span>
+            </div>
+            
+            <ul class="space-y-4 font-mono text-sm md:text-base">
+                <li class="flex items-start gap-3">
+                    <span class="text-red-600 font-bold">[-]</span>
+                    <div>
+                        <strong class="block text-lg">Crammer</strong>
+                        <span class="font-hand text-stone-600">I tend to do my best work when the deadline is dangerously close.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-red-600 font-bold">[-]</span>
+                    <div>
+                        <strong class="block text-lg">Sleeps a Lot</strong>
+                        <span class="font-hand text-stone-600">My system requires extended downtime to recharge creative energy.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-red-600 font-bold">[-]</span>
+                    <div>
+                        <strong class="block text-lg">Coffee Dependent</strong>
+                        <span class="font-hand text-stone-600">Code quality correlates strongly with daily caffeine intake.</span>
+                    </div>
+                </li>
+            </ul>
+            
+            <div class="absolute bottom-10 right-10 border-4 border-red-600/20 text-red-600/20 font-marker text-4xl -rotate-12 p-2 pointer-events-none">
+                FIXING...
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-opportunities" class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center px-4" onclick="closeModal('opportunities')">
+        <div class="modal-paper max-w-lg w-full p-8 shadow-2xl relative border border-stone-300" onclick="event.stopPropagation()">
+            <div class="tape w-32 h-8 -top-4 left-1/2 -translate-x-1/2"></div>
+            <button onclick="closeModal('opportunities')" class="absolute top-4 right-4 text-2xl hover:text-red-600 font-bold">&times;</button>
+            
+            <div class="border-b-2 border-black pb-2 mb-4 flex justify-between items-end">
+                <h2 class="text-3xl font-bold text-stone-800">OPPORTUNITIES</h2>
+                <span class="text-xs font-mono border border-black px-1">EXTERNAL</span>
+            </div>
+            
+            <ul class="space-y-4 font-mono text-sm md:text-base">
+                <li class="flex items-start gap-3">
+                    <span class="text-blue-600 font-bold">[?]</span>
+                    <div>
+                        <strong class="block text-lg">Client Referrals</strong>
+                        <span class="font-hand text-stone-600">Building a sustainable network through word-of-mouth from satisfied event clients and STI connections.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-blue-600 font-bold">[?]</span>
+                    <div>
+                        <strong class="block text-lg">Studio Expansion</strong>
+                        <span class="font-hand text-stone-600">Scaling freelance photography gigs into a full-service studio and equipment rental business.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-blue-600 font-bold">[?]</span>
+                    <div>
+                        <strong class="block text-lg">Backend Systems</strong>
+                        <span class="font-hand text-stone-600">Developing custom inventory and POS solutions for growing local enterprises using Java/C#.</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="modal-threats" class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center px-4" onclick="closeModal('threats')">
+        <div class="modal-paper max-w-lg w-full p-8 shadow-2xl relative border border-stone-300" onclick="event.stopPropagation()">
+            <div class="tape w-32 h-8 -top-4 left-1/2 -translate-x-1/2"></div>
+            <button onclick="closeModal('threats')" class="absolute top-4 right-4 text-2xl hover:text-red-600 font-bold">&times;</button>
+            
+            <div class="border-b-2 border-black pb-2 mb-4 flex justify-between items-end">
+                <h2 class="text-3xl font-bold text-stone-800">THREATS</h2>
+                <span class="text-xs font-mono border border-black px-1">EXTERNAL</span>
+            </div>
+            
+            <ul class="space-y-4 font-mono text-sm md:text-base">
+                <li class="flex items-start gap-3">
+                    <span class="text-yellow-600 font-bold">[!]</span>
+                    <div>
+                        <strong class="block text-lg">AI Generation</strong>
+                        <span class="font-hand text-stone-600">Stock footage is getting too good. Must stay original.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-yellow-600 font-bold">[!]</span>
+                    <div>
+                        <strong class="block text-lg">Render Times</strong>
+                        <span class="font-hand text-stone-600">4K video exports take forever.</span>
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-yellow-600 font-bold">[!]</span>
+                    <div>
+                        <strong class="block text-lg">Other People</strong>
+                        <span class="font-hand text-stone-600">The market is saturated with talented freelancers; standing out requires unique value.</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- MODAL LOGIC (Existing) ---
+        function openModal(id) {
+            document.getElementById('modal-' + id).classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal(id) {
+            document.getElementById('modal-' + id).classList.remove('active');
+            document.body.style.overflow = 'auto'; 
+        }
+
+        // --- FULL PAGE LOGIC (New) ---
+        function openPage(id) {
+            document.getElementById('page-' + id).classList.add('active');
+            document.body.style.overflow = 'hidden'; // Stop background scrolling
+        }
+
+        function closePage(id) {
+            document.getElementById('page-' + id).classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                // Close modals
+                document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                // Close pages
+                document.querySelectorAll('.skill-page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                document.body.style.overflow = 'auto';
+            }
+        });
+    </script>
+</body>
+</html>
